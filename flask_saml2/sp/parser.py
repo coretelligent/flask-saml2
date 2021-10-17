@@ -53,18 +53,16 @@ class ResponseParser(XmlParser):
     @cached_property
     def attributes(self) -> Mapping[str, Union[str, List[str]]]:
         attributes = self._xpath(self.assertion, 'saml:AttributeStatement/saml:Attribute')
-        ret = {}
+        _el = {}
         for el in attributes:
-            name = el.get('Name')
-            attrs = self._xpath(el, 'saml:AttributeValue')
-            if len(attrs) == 1:
-                ret[name] = attrs[0].text
-            else:
-                vals = []
-                for a in attrs:
-                    vals.append(a.text)
-                ret[name] = vals
-        return ret
+            try:
+                _av = self._xpath(el, 'saml:AttributeValue')[0].text
+                _el[el.get('Name')] = _av
+            except IndexError as e:
+                _el[el.get('Name')] = ''
+
+        return _el
+        ret = {}
 
     @cached_property
     def conditions(self) -> Optional[XmlNode]:

@@ -30,6 +30,9 @@ class Login(SAML2View):
         login_next = self.sp.get_login_return_url()
         if handler:
             return redirect(url_for('.login_idp', entity_id=handler.entity_id, next=login_next))
+        handlers = list(self.sp.get_idp_handlers())
+        if len(handlers) == 0:
+            return redirect("/saml/error")
         return self.sp.render_template(
             f'{view_path}/choose_idp.html',
             login_next=login_next,
@@ -72,16 +75,17 @@ class SingleLogout(SAML2View):
         # user back to the IdP for further sign outs...
         return self.do_logout()
 
-    def do_logout(self, handler):
+    def do_logout(self):
         self.sp.logout()
         ...  # TODO
+        return 'OK'
 
 
 class AssertionConsumer(SAML2View):
     def post(self):
         view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
         saml_request = request.form['SAMLResponse']
-        relay_state = request.form['RelayState']
+        relay_state = request.form.get('RelayState')
 
         errors = []
 
@@ -91,6 +95,8 @@ class AssertionConsumer(SAML2View):
                 auth_data = handler.get_auth_data(response)
                 return self.sp.login_successful(auth_data, relay_state)
             except CannotHandleAssertion as e:
+                logger.error("%s could not handle assertion consumer request", handler)
+                logger.error(e)
                 errors.append(e)
             except UserNotAuthorized:
                 return self.sp.render_template(f'{view_path}/user_not_authorized.html')

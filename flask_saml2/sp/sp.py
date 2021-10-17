@@ -37,7 +37,7 @@ class ServiceProvider:
     def login_successful(
         self,
         auth_data: AuthData,
-        relay_state: str,
+        redirect_to: str,
     ) -> Response:
         """ Called when a user is successfully logged on.
         Subclasses should override this if they want to do more
@@ -49,7 +49,9 @@ class ServiceProvider:
         but they *must* call ``super()``.
         """
         self.set_auth_data_in_session(auth_data)
-        return redirect(relay_state)
+        if not redirect_to:
+            redirect_to = self.get_default_login_return_url()
+        return redirect(redirect_to)
 
     # Service provider configuration
 
