@@ -3,6 +3,7 @@ XML templates for SAML 2.0 IdP
 """
 import uuid
 from flask import session
+from flask_saml2.utils import get_random_id
 from flask_saml2.signing import SignableTemplate
 from flask_saml2.types import XmlNode
 from flask_saml2.xml_templates import NameIDTemplate, XmlTemplate
@@ -149,7 +150,7 @@ class AssertionTemplate(SignableTemplate):
 
         return self.element('AuthnStatement', attrs={
             'AuthnInstant': self.params['AUTH_INSTANT'],
-            'SessionIndex': session.get(id, uuid.uuid4()),
+            'SessionIndex': session.get(id, get_random_id()),
         }, children=[
             self.element('AuthnContext', children=[
                 self.element('AuthnContextClassRef', text='urn:oasis:names:tc:SAML:2.0:ac:classes:Password'),
