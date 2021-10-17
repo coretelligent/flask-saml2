@@ -1,11 +1,11 @@
 from typing import Generic, Iterable, Optional, Tuple, TypeVar
 
-from flask import Blueprint, current_app, render_template, url_for
+from flask import Blueprint, current_app, render_template
 
 from flask_saml2.exceptions import CannotHandleAssertion, UserNotAuthorized
 from flask_saml2.signing import Digester, RsaSha1Signer, Sha1Digester, Signer
 from flask_saml2.types import X509, PKey
-from flask_saml2.utils import certificate_to_string, import_string
+from flask_saml2.utils import certificate_to_string, import_string, url_for
 
 from .sphandler import SPHandler
 from .views import (

@@ -1,9 +1,10 @@
 import logging
 
-from flask import Response, make_response, redirect, request, session, url_for, current_app
+from flask import Response, make_response, redirect, request, session, current_app
 from flask.views import MethodView, View
 
 from flask_saml2.exceptions import CannotHandleAssertion
+from flask_saml2.utils import url_for
 
 from . import idp
 

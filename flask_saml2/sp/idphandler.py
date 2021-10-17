@@ -267,7 +267,7 @@ class IdPHandler:
         formatting, and don't support the format produced by
         :meth:`datetime.datetime.isoformat`.
         """
-        return value.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return value.replace(tzinfo=None).isoformat(timespec='seconds') + 'Z'
 
     def __str__(self):
         if self.display_name:

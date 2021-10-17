@@ -1,9 +1,10 @@
 import logging
 
-from flask import Response, make_response, redirect, request, url_for, current_app
+from flask import Response, make_response, redirect, request, current_app
 from flask.views import MethodView, View
 
 from flask_saml2.exceptions import CannotHandleAssertion, UserNotAuthorized
+from flask_saml2.utils import url_for
 
 from . import sp
 

@@ -70,7 +70,7 @@ class XmlParser:
         the certificate provided in the request. This is INSECURE and
         more-or-less only useful for testing.
         """
-        return XMLVerifier().verify(xml_tree, x509_cert=certificate).signed_xml
+        return XMLVerifier().verify(xml_tree, x509_cert=certificate, ignore_ambiguous_key_info=True).signed_xml
 
     def _xpath_xml_tree(self, xpath_statement):
         return self._xpath(self.xml_tree, xpath_statement)

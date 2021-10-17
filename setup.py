@@ -25,7 +25,7 @@ setup_kwargs = dict(
     install_requires=[
         'attrs>=18.1.0',
         'Flask>=1.0.0',
-        'signxml>=2.4.0',
+        'signxml>=2.7.3',
         'lxml>=3.8.0',
         'pyopenssl<21',
         'defusedxml>=0.5.0',

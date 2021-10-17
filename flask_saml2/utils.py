@@ -7,6 +7,7 @@ from typing import Union
 
 import OpenSSL.crypto
 import pytz
+from flask import url_for as flask_url_for, current_app
 
 from . import types as TS
 
@@ -146,3 +147,8 @@ def private_key_from_file(
     """
     with open(filename, 'r') as handle:
         return private_key_from_string(handle.read(), format)
+
+
+def url_for(*args, **kwargs):
+    return flask_url_for(
+        *args, **kwargs, _scheme=current_app.config.get('HTTP_SCHEME', 'http'))
