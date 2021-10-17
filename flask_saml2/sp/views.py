@@ -1,6 +1,6 @@
 import logging
 
-from flask import Response, make_response, redirect, request, url_for
+from flask import Response, make_response, redirect, request, url_for, current_app
 from flask.views import MethodView, View
 
 from flask_saml2.exceptions import CannotHandleAssertion, UserNotAuthorized
@@ -25,12 +25,13 @@ class Login(SAML2View):
     Log in to this SP using SAML.
     """
     def get(self):
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
         handler = self.sp.get_default_idp_handler()
         login_next = self.sp.get_login_return_url()
         if handler:
             return redirect(url_for('.login_idp', entity_id=handler.entity_id, next=login_next))
         return self.sp.render_template(
-            'flask_saml2_sp/choose_idp.html',
+            f'{view_path}/choose_idp.html',
             login_next=login_next,
             handlers=self.sp.get_idp_handlers())
 
@@ -78,6 +79,7 @@ class SingleLogout(SAML2View):
 
 class AssertionConsumer(SAML2View):
     def post(self):
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
         saml_request = request.form['SAMLResponse']
         relay_state = request.form['RelayState']
 
@@ -91,7 +93,7 @@ class AssertionConsumer(SAML2View):
             except CannotHandleAssertion as e:
                 errors.append(e)
             except UserNotAuthorized:
-                return self.sp.render_template('flask_saml2_sp/user_not_authorized.html')
+                return self.sp.render_template(f'{view_path}/user_not_authorized.html')
         error_string = ""
         for e in errors:
             error_string = f"{error_string} - {e} <br>"
@@ -103,8 +105,9 @@ class Metadata(SAML2View):
     Replies with the XML metadata for this Service Provider / IdP handler pair.
     """
     def get(self):
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
         metadata = self.sp.render_template(
-            'flask_saml2_sp/metadata.xml',
+            f'{view_path}/metadata.xml',
             **self.sp.get_metadata_context())
 
         response = make_response(metadata)

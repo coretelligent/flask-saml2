@@ -1,6 +1,6 @@
 import logging
 
-from flask import Response, make_response, redirect, request, session, url_for
+from flask import Response, make_response, redirect, request, session, url_for, current_app
 from flask.views import MethodView, View
 
 from flask_saml2.exceptions import CannotHandleAssertion
@@ -38,13 +38,15 @@ class LoginBegin(SAML2View):
 class LoginProcess(SAML2View):
     def get(self):
         self.idp.login_required()
-
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
         saml_request = session['SAMLRequest']
         relay_state = session['RelayState']
-
         for handler in self.idp.get_sp_handlers():
+
+            request = handler.parse_authn_request(saml_request)
+            if handler.entity_id != request.issuer:
+                continue
             try:
-                request = handler.parse_authn_request(saml_request)
                 response = handler.make_response(request)
                 context = handler.get_response_context(request, response, relay_state)
             except (CannotHandleAssertion, ValueError):
@@ -52,9 +54,10 @@ class LoginProcess(SAML2View):
                 pass
             else:
                 return self.idp.render_template(
-                    'flask_saml2_idp/login.html', **context)
+                    f'{view_path}/login.html', **context)
         raise CannotHandleAssertion(
             "No Service Provider handlers could handle this SAML request")
+
 
 
 class Logout(SAML2View):
@@ -66,6 +69,7 @@ class Logout(SAML2View):
     def get(self):
         self.idp.login_required()
         self.idp.logout()
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
 
         for arg in ['RelayState', 'redirect_to']:
             if arg not in request.args:
@@ -74,7 +78,7 @@ class Logout(SAML2View):
             if redirect_url and self.idp.is_valid_redirect(redirect_url):
                 return redirect(redirect_url)
 
-        return self.idp.render_template('flask_saml2_idp/logged_out.html')
+        return self.idp.render_template(f'{view_path}/logged_out.html')
 
 
 class SLOLogoutBegin(SAML2View):
@@ -87,6 +91,7 @@ class SLOLogoutBegin(SAML2View):
 
         saml_request = session['SAMLRequest']
         relay_state = session['RelayState']
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
 
         for handler in self.idp.get_sp_handlers():
             try:
@@ -97,7 +102,7 @@ class SLOLogoutBegin(SAML2View):
                 logger.exception("%s could not handle login request", handler)
                 pass
             else:
-                return self.idp.render_template('flask_saml2_idp/login.html', **context)
+                return self.idp.render_template(f'{view_path}/login.html', **context)
         raise CannotHandleAssertion(
             "No Service Provider handlers could handle this SAML request")
 
@@ -107,8 +112,9 @@ class Metadata(SAML2View):
     Replies with the XML Metadata IDPSSODescriptor.
     """
     def get(self):
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
         metadata = self.idp.render_template(
-            'flask_saml2_idp/metadata.xml',
+            f'{view_path}/metadata.xml',
             **self.idp.get_metadata_context())
 
         response = make_response(metadata)
@@ -118,8 +124,9 @@ class Metadata(SAML2View):
 
 class UserNotAuthorizedView(SAML2ViewMixin, View):
     def dispatch_request(self, exception):
+        view_path = current_app.config.get('SAML2_VIEW_PATH', "flask_saml2_idp")
         logger.exception("User not authorized", exc_info=exception)
-        return self.idp.render_template('flask_saml2_idp/invalid_user.html')
+        return self.idp.render_template(f'{view_path}/invalid_user.html')
 
 
 class CannotHandleAssertionView(SAML2ViewMixin, View):
