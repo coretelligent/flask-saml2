@@ -20,7 +20,7 @@ setup_kwargs = dict(
 
     description='SAML 2.0 IdP and SP for Flask and Python 3',
     long_description=readme,
-    url='http://github.com/coretelligent/flask-saml2_core',
+    url='https://github.com/coretelligent/flask-saml2',
 
     install_requires=[
         'attrs>=18.1.0',
