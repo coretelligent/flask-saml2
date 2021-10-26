@@ -1,4 +1,5 @@
 import datetime
+import logging
 import pathlib
 import typing as T
 import uuid
@@ -120,8 +121,12 @@ def certificate_from_file(
     :param filename: The path to the certificate on disk.
     :param format: The format of the certificate, from :doc:`OpenSSL:api/crypto`.
     """
-    with open(filename, 'r') as handle:
-        return certificate_from_string(handle.read(), format)
+    try:
+        with open(filename, 'r') as handle:
+            return certificate_from_string(handle.read(), format)
+    except FileNotFoundError as e:
+        logging.warning(f"Certidcate not found. File: {filename}")
+        return None
 
 
 def private_key_from_string(
