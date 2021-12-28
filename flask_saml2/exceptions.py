@@ -1,6 +1,7 @@
 """
 All the SAML-specific exceptions this library can throw.
 """
+from flask import abort
 
 
 class SAML2Exception(Exception):
@@ -24,15 +25,24 @@ class CannotHandleAssertion(MessageException):
     """
     This SP or IdP handler can not handle this assertion.
     """
+    def __init__(self, msg):
+        self.msg = msg
+        abort(422, description=msg)
 
 
 class UserNotAuthorized(MessageException):
     """
     User not authorized for SAML 2.0 authentication.
     """
+    def __init__(self, msg):
+        self.msg = msg
+        abort(401, description=msg)
 
 
 class ImproperlyConfigured(MessageException):
     """
     Someone done goofed when configuring this application.
     """
+    def __init__(self, msg):
+        self.msg = msg
+        abort(400, description=msg)
